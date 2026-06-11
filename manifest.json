@@ -2,12 +2,12 @@
   "name": "GrowFarm Log - Sistem Pencatatan Ladang Sayur",
   "short_name": "GrowFarm Log",
   "description": "Aplikasi pencatatan tugasan harian, log cuaca, dan hasil pengeluaran sayur untuk GrowFarm Pendang",
-  "start_url": "/",
+  "start_url": "/growfarm-app/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#15803d",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "/growfarm-app/",
   "icons": [
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%2315803d' width='192' height='192'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dy='.3em' font-family='Arial'>🌱</text></svg>",
@@ -36,7 +36,7 @@
       "name": "Tugasan",
       "short_name": "Tugasan",
       "description": "Buka tab tugasan",
-      "url": "/?tab=tugasan",
+      "url": "/growfarm-app/?tab=tugasan",
       "icons": [
         {
           "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%2315803d' width='96' height='96'/><text x='50%' y='50%' font-size='50' fill='white' text-anchor='middle' dy='.3em'>✓</text></svg>",
@@ -49,7 +49,7 @@
       "name": "Log Harian",
       "short_name": "Log Harian",
       "description": "Buka tab log harian",
-      "url": "/?tab=log",
+      "url": "/growfarm-app/?tab=log",
       "icons": [
         {
           "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%2315803d' width='96' height='96'/><text x='50%' y='50%' font-size='50' fill='white' text-anchor='middle' dy='.3em'>📝</text></svg>",
@@ -62,7 +62,7 @@
       "name": "Hasil",
       "short_name": "Hasil",
       "description": "Buka tab hasil",
-      "url": "/?tab=hasil",
+      "url": "/growfarm-app/?tab=hasil",
       "icons": [
         {
           "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%2315803d' width='96' height='96'/><text x='50%' y='50%' font-size='50' fill='white' text-anchor='middle' dy='.3em'>📊</text></svg>",
