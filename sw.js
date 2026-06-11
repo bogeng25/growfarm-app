@@ -1,80 +1,56 @@
 // Service Worker untuk GrowFarm Log PWA
-// Fungsi: Cache file supaya app boleh buka offline
+// Versi: v3 (cache version dinaikkan untuk paksa update)
 
-const CACHE_NAME = 'growfarm-v1';
-const FILES_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-];
+const CACHE_NAME = 'growfarm-v3';
 
-// Install: cache file yang perlu
+// Install: skip waiting supaya update terus aktif
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Service Worker: Caching files');
-      return cache.addAll(FILES_TO_CACHE).catch(err => {
-        console.log('Some files failed to cache:', err);
-      });
-    })
-  );
-  self.skipWaiting(); // Activate immediately
+  self.skipWaiting();
 });
 
-// Activate: clean up old caches
+// Activate: padam SEMUA cache lama
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Service Worker: Deleting old cache', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim(); // Claim all clients
 });
 
-// Fetch: serve from cache, fallback to network
+// Fetch: hanya cache file dari domain sendiri (same-origin)
+// Abaikan chrome-extension, CDN luar, dll — terus pakai network
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') {
+  const url = new URL(event.request.url);
+
+  // Skip kalau bukan GET, atau bukan http/https (cth chrome-extension)
+  if (event.request.method !== 'GET' || !url.protocol.startsWith('http')) {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) {
-        console.log('Service Worker: Serving from cache', event.request.url);
-        return response;
-      }
+  // Hanya cache file dari domain app sendiri
+  const sameOrigin = url.origin === self.location.origin;
 
-      // Attempt network request
-      return fetch(event.request).then((response) => {
-        // Cache successful responses
-        if (response && response.status === 200) {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return response;
-      }).catch((error) => {
-        console.log('Service Worker: Fetch failed', event.request.url, error);
-        // Offline fallback - return cached version or offline page
-        return caches.match(event.request).catch(() => {
-          return new Response('Offline - tidak boleh akses halaman ini offline', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: new Headers({ 'Content-Type': 'text/plain; charset=utf-8' })
-          });
-        });
-      });
-    })
-  );
+  if (sameOrigin) {
+    // Network-first: cuba ambil terbaru dulu, fallback ke cache kalau offline
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, copy).catch(() => {});
+            });
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+  }
+  // CDN luar (React, Tailwind, XLSX): biar browser handle sendiri, jangan cache
 });
