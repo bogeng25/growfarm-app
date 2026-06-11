@@ -227,7 +227,27 @@
             }, []);
 
             useEffect(() => {
+                // Tunjuk data sedia ada dulu (cache/local)
                 setMatrix(getVal(`matrix:${weekKey}`, {}));
+                // Lepas tu ambil versi terkini dari cloud untuk minggu ni
+                if (supa && loaded) {
+                    (async () => {
+                        try {
+                            const { data, error } = await supa
+                                .from("growfarm_data")
+                                .select("value")
+                                .eq("key", `matrix:${weekKey}`)
+                                .maybeSingle();
+                            if (!error && data && data.value) {
+                                cloudData.current[`matrix:${weekKey}`] = data.value;
+                                lsSet(`matrix:${weekKey}`, data.value);
+                                setMatrix(data.value);
+                            }
+                        } catch (e) {
+                            console.error("Matrix sync error:", e);
+                        }
+                    })();
+                }
             }, [weekKey, loaded]);
 
             useEffect(() => {
@@ -235,6 +255,27 @@
                 setLog(getVal(`daylog:${logDate}`, { am: "", pm: "", masalah: "", nota: "" }));
                 logLoaded.current = true;
                 setLogStatus("");
+                // Ambil versi terkini dari cloud untuk tarikh ni
+                if (supa && loaded) {
+                    (async () => {
+                        try {
+                            const { data, error } = await supa
+                                .from("growfarm_data")
+                                .select("value")
+                                .eq("key", `daylog:${logDate}`)
+                                .maybeSingle();
+                            if (!error && data && data.value) {
+                                cloudData.current[`daylog:${logDate}`] = data.value;
+                                lsSet(`daylog:${logDate}`, data.value);
+                                logLoaded.current = false;
+                                setLog(data.value);
+                                logLoaded.current = true;
+                            }
+                        } catch (e) {
+                            console.error("Log sync error:", e);
+                        }
+                    })();
+                }
             }, [logDate, loaded]);
 
             useEffect(() => {
